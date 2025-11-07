@@ -1,289 +1,110 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PSI Control System</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <style>
-        ::-webkit-scrollbar { width: 8px; }
-        ::-webkit-scrollbar-track { background: #1e293b; }
-        ::-webkit-scrollbar-thumb { background: #334155; border-radius: 4px; }
-        ::-webkit-scrollbar-thumb:hover { background: #475569; }
-
-        input[type=range]::-webkit-slider-runnable-track {
-            background: #475569;
-            height: 8px;
-            border-radius: 4px;
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PSI Control System</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            'primary': '#3b82f6',
+            'card-bg': '#1e293b',
+            'bg-dark': '#0f172a',
+          },
+          fontFamily: { sans: ['Inter', 'sans-serif'] }
         }
-
-        input[type=range]::-webkit-slider-thumb {
-            -webkit-appearance: none;
-            appearance: none;
-            margin-top: -6px; /* center */
-            width: 20px;
-            height: 20px;
-            border-radius: 50%;
-            background: #3b82f6;
-            cursor: pointer;
-            box-shadow: 0 0 5px rgba(59, 130, 246, 0.5);
-        }
-    </style>
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    fontFamily: {
-                        sans: ['Inter', 'sans-serif'],
-                    },
-                    colors: {
-                        'primary': '#3b82f6',
-                        'card-bg': '#1e293b',
-                        'bg-dark': '#0f172a',
-                    }
-                }
-            }
-        }
-    </script>
+      }
+    };
+  </script>
 </head>
-<body class="bg-bg-dark text-white font-sans min-h-screen p-4 sm:p-8">
 
-    <div id="app" class="max-w-6xl mx-auto">
-        <header class="flex justify-between items-center mb-6">
-            <h1 class="text-3xl font-bold text-primary">PSI Control System</h1>
-            <div id="system-status-indicator" class="flex items-center space-x-2 p-2 bg-green-700 text-white rounded-lg shadow-lg">
-                <div class="h-3 w-3 bg-green-300 rounded-full animate-pulse"></div>
-                <span class="text-sm font-semibold">OPERATIONAL</span>
-            </div>
-        </header>
+<body class="bg-bg-dark text-white font-sans min-h-screen p-6">
+  <div class="max-w-3xl mx-auto space-y-8">
+    <h1 class="text-3xl font-bold text-primary">PSI Control System</h1>
 
-        <!-- stop button -->
-        <div class="mb-8">
-            <button id="emergency-stop-btn"
-                    class="w-full py-4 text-xl font-extrabold bg-red-600 hover:bg-red-700 active:bg-red-800 transition duration-150 ease-in-out rounded-xl shadow-2xl shadow-red-900/50 uppercase tracking-widest disabled:opacity-50 disabled:cursor-not-allowed"
-                    onclick="handleEmergencyStop()">
-                Emergency Stop
-            </button>
-        </div>
+    <button id="emergency-stop" class="w-full py-3 bg-red-600 rounded-lg font-bold hover:bg-red-700">Emergency Stop</button>
 
-        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
-
-            <!-- machine controls -->
-            <div class="lg:col-span-2 p-6 bg-card-bg rounded-xl shadow-2xl border border-slate-700/50">
-                <h2 class="text-xl font-semibold mb-6 border-b border-slate-700 pb-3">Machine Controls</h2>
-                <p class="text-sm text-slate-400 mb-6">Adjust PSI rotation, and belt speed</p>
-
-                <div class="control-block mb-8">
-                    <div class="flex justify-between items-center mb-2">
-                        <label for="psi-pressure" class="text-lg font-medium">PSI Pressure</label>
-                        <span id="psi-value" class="text-primary text-xl font-bold">22.5 PSI</span>
-                    </div>
-                    <input type="range" id="psi-pressure" min="20" max="25" value="22.5" step="0.1"
-                           class="w-full h-2 bg-slate-700 rounded-lg appearance-none cursor-pointer"
-                           oninput="updateValue('psi', this.value)" disabled>
-                </div>
-
-                <div class="control-block mb-8">
-                    <div class="flex justify-between items-center mb-2">
-                        <label for="rotation-speed" class="text-lg font-medium">Rotation Speed</label>
-                        <span id="rotation-value" class="text-purple-400 text-xl font-bold">60 %</span>
-                    </div>
-                    <input type="range" id="rotation-speed" min="0" max="100" value="60"
-                           class="w-full h-2 bg-slate-700 rounded-lg appearance-none cursor-pointer"
-                           oninput="updateValue('rotation', this.value)" disabled>
-                </div>
-
-                <div class="control-block mb-8">
-                    <div class="flex justify-between items-center mb-6">
-                        <label for="belt-speed" class="text-lg font-medium">Belt Speed</label>
-                        <span id="belt-value" class="text-green-400 text-xl font-bold">50 %</span>
-                    </div>
-                    <input type="range" id="belt-speed" min="0" max="100" value="50"
-                           class="w-full h-2 bg-slate-700 rounded-lg appearance-none cursor-pointer"
-                           oninput="updateValue('belt', this.value)" disabled>
-                </div>
-
-                <div class="mt-8 pt-6 border-t border-slate-700">
-                    <h3 class="text-lg font-semibold mb-4">Auto Pause Mode</h3>
-                    <div class="flex justify-between items-center">
-                        <p class="text-slate-400">Pause after 12 rotations for sprinkles</p>
-                        <label class="relative inline-flex items-center cursor-pointer">
-                            <input type="checkbox" id="auto-pause-toggle" value="" class="sr-only peer" checked disabled>
-                            <div class="w-11 h-6 bg-slate-700 rounded-full peer peer-focus:ring-2 peer-focus:ring-blue-500 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:left-[2px] after:bg-white after:border after:border-slate-300 after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary"></div>
-                        </label>
-                    </div>
-                </div>
-
-                <div class="mt-8 pt-6 border-t border-slate-700">
-                    <h3 class="text-lg font-semibold mb-4">Rotation Counter</h3>
-                    <div class="flex justify-between items-center">
-                        <p class="text-slate-400">Current Count</p>
-                        <span id="rotation-counter" class="text-3xl font-extrabold text-white">0 / 12</span>
-                    </div>
-                </div>
-
-            </div>
-
-            <!-- sensor readings -->
-            <div class="p-6 bg-card-bg rounded-xl shadow-2xl border border-slate-700/50">
-                <h2 class="text-xl font-semibold mb-6 border-b border-slate-700 pb-3">Sensor Readings</h2>
-                <p class="text-sm text-slate-400 mb-6">Real-time IoT sensor data</p>
-
-                <div class="space-y-4">
-                    <div class="p-4 bg-slate-800 rounded-lg">
-                        <h3 class="font-medium text-slate-300">Motion Sensor</h3>
-                        <p id="motion-status" class="text-green-400 font-bold text-lg">Clear</p>
-                    </div>
-
-                    <div class="p-4 bg-slate-800 rounded-lg">
-                        <h3 class="font-medium text-slate-300">Pressure Sensor</h3>
-                        <p id="pressure-reading" class="text-primary font-bold text-lg">22.5 PSI</p>
-                    </div>
-
-                    <div class="p-4 bg-slate-800 rounded-lg">
-                        <h3 class="font-medium text-slate-300">Ultrasonic Distance</h3>
-                        <p class="text-slate-400 text-sm">Gun distance from object</p>
-                        <p id="distance-reading" class="text-yellow-400 font-bold text-lg">130 MM</p>
-                    </div>
-
-                    <div class="p-4 bg-slate-800 rounded-lg">
-                        <h3 class="font-medium text-slate-300">Hall Effect Sensor</h3>
-                        <p class="text-slate-400 text-sm">Rotating object position</p>
-                        <p id="hall-reading" class="text-purple-400 font-bold text-lg">0 °</p>
-                    </div>
-                </div>
-
-                <!-- system stuff -->
-                <div class="mt-8 pt-6 border-t border-slate-700">
-                    <h3 class="text-xl font-semibold mb-4">System Status</h3>
-                    <div class="space-y-3">
-                        <div class="flex justify-between items-center">
-                            <span class="text-slate-400">Power</span>
-                            <span id="status-power" class="text-green-400 font-semibold">ON</span>
-                        </div>
-                        <div class="flex justify-between items-center">
-                            <span class="text-slate-400">Operation</span>
-                            <span id="status-operation" class="text-green-400 font-semibold">ENABLED</span>
-                        </div>
-                        <div class="flex justify-between items-center">
-                            <span class="text-slate-400">Auto Mode</span>
-                            <span id="status-auto-mode" class="text-primary font-semibold">ENABLED</span>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
+    <div>
+      <label class="block mb-2">PSI Pressure: <span id="psi-val" class="text-primary">22.5 PSI</span></label>
+      <input id="psi" type="range" min="20" max="25" value="22.5" step="0.1" class="w-full">
     </div>
 
-    <!-- probably won't be seen by people being presented to but did it anyway -->
-    <div id="modal-backdrop" class="fixed inset-0 bg-black bg-opacity-75 hidden items-center justify-center p-4 z-50">
-        <div class="bg-card-bg p-6 rounded-xl shadow-3xl w-full max-w-sm">
-            <h3 class="text-2xl font-bold text-red-500 mb-4">System Halted</h3>
-            <p class="text-slate-300 mb-6">The system has been powered down via the Emergency Stop. All controls are disabled.</p>
-            <button onclick="closeModal()" class="w-full py-2 bg-primary hover:bg-blue-700 rounded-lg font-semibold">Acknowledge</button>
-        </div>
+    <div>
+      <label class="block mb-2">Rotation Speed: <span id="rot-val" class="text-purple-400">60%</span></label>
+      <input id="rot" type="range" min="0" max="100" value="60" class="w-full">
     </div>
 
-    <script type="module">
-        // update values func
-        function updateValue(type, value) {
-            switch (type) {
-                case 'psi':
-                    document.getElementById('psi-value').textContent = `${parseFloat(value).toFixed(1)} PSI`;
-                    document.getElementById('pressure-reading').textContent = `${parseFloat(value).toFixed(1)} PSI`;
-                    break;
-                case 'rotation':
-                    document.getElementById('rotation-value').textContent = `${value} %`;
-                    break;
-                case 'belt':
-                    document.getElementById('belt-value').textContent = `${value} %`;
-                    break;
-            }
-        }
+    <div>
+      <label class="block mb-2">Belt Speed: <span id="belt-val" class="text-green-400">50%</span></label>
+      <input id="belt" type="range" min="0" max="100" value="50" class="w-full">
+    </div>
 
-        let isSystemOperational = true;
+    <div id="status" class="p-3 bg-green-700 rounded-lg flex items-center justify-between">
+      <span class="font-semibold">OPERATIONAL</span>
+      <div class="h-3 w-3 bg-green-300 rounded-full animate-pulse"></div>
+    </div>
+  </div>
 
-        function handleEmergencyStop() {
-            if (!isSystemOperational) return;
+  <div id="modal" class="fixed inset-0 bg-black/70 hidden items-center justify-center">
+    <div class="bg-card-bg p-6 rounded-xl max-w-sm mx-auto">
+      <h2 class="text-2xl font-bold text-red-500 mb-4">System Halted</h2>
+      <p class="text-slate-300 mb-6">Emergency stop triggered. Controls disabled.</p>
+      <button id="ack" class="w-full bg-primary py-2 rounded-lg font-semibold hover:bg-blue-700">Acknowledge</button>
+    </div>
+  </div>
 
-            isSystemOperational = false;
+  <script type="module">
+  {
+    let operational = true;
 
-            document.querySelectorAll('input[type="range"], input[type="checkbox"]').forEach(input => {
-                input.disabled = true;
-            });
+    const psi = document.getElementById('psi');
+    const rot = document.getElementById('rot');
+    const belt = document.getElementById('belt');
+    const modal = document.getElementById('modal');
+    const status = document.getElementById('status');
 
-            updateValue('psi', 0);
-            document.getElementById('psi-pressure').value = 0;
+    // initialize
+    document.getElementById('psi-val').textContent = `${parseFloat(psi.value).toFixed(1)} PSI`;
+    document.getElementById('rot-val').textContent = `${rot.value}%`;
+    document.getElementById('belt-val').textContent = `${belt.value}%`;
 
-            updateValue('rotation', 0);
-            document.getElementById('rotation-speed').value = 0;
+    psi.oninput = e => {
+      document.getElementById('psi-val').textContent = `${parseFloat(e.target.value).toFixed(1)} PSI`;
+    };
 
-            updateValue('belt', 0);
-            document.getElementById('belt-speed').value = 0;
+    rot.oninput = e => {
+      document.getElementById('rot-val').textContent = `${e.target.value}%`;
+    };
 
-            document.getElementById('auto-pause-toggle').checked = false;
-            document.getElementById('rotation-counter').textContent = '0 / 12 (STOPPED)';
+    belt.oninput = e => {
+      document.getElementById('belt-val').textContent = `${e.target.value}%`;
+    };
 
-            document.getElementById('system-status-indicator').classList.remove('bg-green-700');
-            document.getElementById('system-status-indicator').classList.add('bg-red-700');
-            document.getElementById('system-status-indicator').querySelector('span').textContent = 'HALTED';
-            document.getElementById('system-status-indicator').querySelector('div').classList.remove('bg-green-300', 'animate-pulse');
-            document.getElementById('system-status-indicator').querySelector('div').classList.add('bg-red-300');
+    document.getElementById('emergency-stop').onclick = () => {
+      if (!operational) return;
+      operational = false;
+      [psi, rot, belt].forEach(i => i.disabled = true);
+      document.getElementById('psi-val').textContent = '0.0 PSI';
+      document.getElementById('rot-val').textContent = '0%';
+      document.getElementById('belt-val').textContent = '0%';
+      status.classList.remove('bg-green-700');
+      status.classList.add('bg-red-700');
+      status.querySelector('span').textContent = 'HALTED';
+      const dot = status.querySelector('div');
+      dot.classList.remove('bg-green-300', 'animate-pulse');
+      dot.classList.add('bg-red-300');
+      modal.classList.remove('hidden');
+      modal.classList.add('flex');
+    };
 
-            document.getElementById('status-power').textContent = 'OFF';
-            document.getElementById('status-power').classList.remove('text-green-400');
-            document.getElementById('status-power').classList.add('text-red-400');
-
-            document.getElementById('status-operation').textContent = 'DISABLED';
-            document.getElementById('status-operation').classList.remove('text-green-400');
-            document.getElementById('status-operation').classList.add('text-red-400');
-
-            document.getElementById('status-auto-mode').textContent = 'DISABLED';
-            document.getElementById('status-auto-mode').classList.remove('text-primary');
-            document.getElementById('status-auto-mode').classList.add('text-red-400');
-
-            // 4. Update Sensor Readings
-            document.getElementById('motion-status').textContent = 'STOPPED';
-            document.getElementById('motion-status').classList.remove('text-green-400');
-            document.getElementById('motion-status').classList.add('text-red-400');
-
-            document.getElementById('pressure-reading').textContent = '0.0 PSI';
-            document.getElementById('distance-reading').textContent = '--- MM';
-            document.getElementById('hall-reading').textContent = '--- °';
-
-            openModal();
-        }
-
-        function openModal() {
-            const modal = document.getElementById('modal-backdrop');
-            modal.classList.remove('hidden');
-            modal.classList.add('flex');
-        }
-
-        function closeModal() {
-            const modal = document.getElementById('modal-backdrop');
-            modal.classList.add('hidden');
-            modal.classList.remove('flex');
-        }
-
-        window.updateValue = updateValue;
-        window.handleEmergencyStop = handleEmergencyStop;
-        window.closeModal = closeModal;
-
-        window.onload = () => {
-            updateValue('psi', document.getElementById('psi-pressure').value);
-            updateValue('rotation', document.getElementById('rotation-speed').value);
-            updateValue('belt', document.getElementById('belt-speed').value);
-
-            isSystemOperational = true;
-            document.querySelectorAll('input[type="range"], input[type="checkbox"]').forEach(input => {
-                input.disabled = false;
-            });
-
-            document.getElementById('emergency-stop-btn').disabled = false;
-
-            document.getElementById('pressure-reading').textContent = document.getElementById('psi-value').textContent;
-        };
-    </script>
+    document.getElementById('ack').onclick = () => {
+      modal.classList.add('hidden');
+      modal.classList.remove('flex');
+    };
+  }
+  </script>
 </body>
 </html>
